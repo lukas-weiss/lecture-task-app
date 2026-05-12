@@ -1,0 +1,30 @@
+services:
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: student
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U student -d tasks"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tasks_api:
+    build: .
+    command: python src/tasks_api.py
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tasks
+      DB_USER: student
+      DB_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
